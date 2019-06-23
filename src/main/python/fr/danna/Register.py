@@ -8,16 +8,40 @@ import requests
 from dataclasses import dataclass
 from requests import Response
 
-CUSTOMER_ACCOUNT_ID = 'annick.danna@gmail.com'
-CUSTOMER_ACCOUNT_PWD = 'Resamania2019'
-CUSTOMER_CLIENT_ID = '4_5pq41l35lao848k44kk84ssc8kgkcswo0s0k040cwkgw4ko8g4'
-CUSTOMER_CLIENT_SECRET = '1qnd586ifbesc4444cc0o8g4sw4g4kwcco0owg8o4ccg48ssog'
-
 FRANCE_TZ = pytz.timezone('Europe/Paris')
 
 
 @dataclass
+class Customer:
+    acccount_id: str
+    accound_pwd: str
+    client_id: str
+    client_secret: str
+    family_name: str
+    given_name: str
+    account_creation_date: str
+    contact_id: int
+    contact_number: int
+    contact_club_id: int
+
+
+CUSTOMER = Customer(
+    'annick.danna@gmail.com',
+    'Resamania2019',
+    '4_5pq41l35lao848k44kk84ssc8kgkcswo0s0k040cwkgw4ko8g4',
+    '1qnd586ifbesc4444cc0o8g4sw4g4kwcco0owg8o4ccg48ssog',
+    'DANNA',
+    'ANNICK',
+    '2014-09-03T00:00:00+02:00',
+    398242,
+    963139,
+    236
+)
+
+
+@dataclass
 class Session:
+    customer: Customer
     access_token: str
     expires_in: int
     refresh_token: str
@@ -25,13 +49,10 @@ class Session:
     token_type: str
 
 
-def login(user_id: str, user_pwd: str, client_id, client_secret) -> Session:
+def login(customer: Customer) -> Session:
     """
     Logs in (authent) the given user.
-    :param client_id:
-    :param client_secret:
-    :param client_id:
-    :param client_secret:
+    :param customer:
     """
 
     url = 'https://api.fr.fitnesspark.app/fitnesspark/oauth/v2/token'
@@ -43,10 +64,10 @@ def login(user_id: str, user_pwd: str, client_id, client_secret) -> Session:
     }
     data = {
         'grant_type': 'password',
-        'username': user_id,
-        'password': user_pwd,
-        'client_id': client_id,
-        'client_secret': client_secret,
+        'username': customer.acccount_id,
+        'password': customer.accound_pwd,
+        'client_id': customer.client_id,
+        'client_secret': customer.client_secret,
         'redirect_uri': 'https://member.fr.fitnesspark.app/fitnesspark/',
     }
     resp: Response = requests.post(url, headers=headers, data=data)
@@ -54,6 +75,7 @@ def login(user_id: str, user_pwd: str, client_id, client_secret) -> Session:
         raise Exception("Can't fetch URL: {0} {1}".format(resp.status_code, resp.content))
     resp_dict = resp.json()
     user_session = Session(
+        customer,
         resp_dict['access_token'],
         resp_dict['expires_in'],
         resp_dict['refresh_token'],
@@ -87,7 +109,9 @@ def register(session: Session, activity: Activity, when: datetime):
     Register the user of the given session to the given activity, at the given date.
     """
 
-    theClazz: Class = clazz(activity, datetime)
+    customer = session.customer
+
+    class_event: Class = clazz(activity, when)
 
     url = 'https://api.fr.fitnesspark.app/fitnesspark/attendees'
     headers = {
@@ -99,19 +123,19 @@ def register(session: Session, activity: Activity, when: datetime):
         'Content-Type': 'application/ld+json'
     }
     data = {
-        'contactId': '/fitnesspark/contacts/398242',
-        'contactClubId': '/fitnesspark/clubs/236',
-        'contactNumber': '963139',
-        'contactFamilyName': 'DANNA',
-        'contactGivenName': 'ANNICK',
-        'contactCreatedAt': '2014-09-03T00:00:00+02:00',
-        'classEvent': '/fitnesspark/class_events/{0}'.format(theClazz.id)
+        'contactId': '/fitnesspark/contacts/{0}'.format(customer.contact_id),
+        'contactClubId': '/fitnesspark/clubs/{0}'.format(customer.contact_club_id),
+        'contactNumber': '{0}'.format(customer.contact_number),
+        'contactFamilyName': customer.family_name,
+        'contactGivenName': customer.given_name,
+        'contactCreatedAt': customer.account_creation_date,
+        'classEvent': '/fitnesspark/class_events/{0}'.format(class_event.id)
     }
     resp: Response = requests.post(url, headers=headers, data=json.dumps(data))
-    if resp.status_code != requests.codes.ok:
+    if resp.status_code != requests.codes.created:
         raise Exception("Can't fetch URL: {0} {1}".format(resp.status_code, resp.content))
 
 
-session: Session = login(CUSTOMER_ACCOUNT_ID, CUSTOMER_ACCOUNT_PWD, CUSTOMER_CLIENT_ID, CUSTOMER_CLIENT_SECRET)
+session: Session = login(CUSTOMER)
 
 register(session, Activity.ZUMBA, datetime(2019, 6, 27, 19, 15, 0, 0, FRANCE_TZ))
