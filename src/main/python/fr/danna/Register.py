@@ -1,5 +1,6 @@
 # import urllib
 import json
+import logging
 import re
 import string
 from datetime import datetime
@@ -12,6 +13,10 @@ from dataclasses import dataclass
 from requests import Response
 
 FRANCE_TZ = pytz.timezone('Europe/Paris')
+
+logging.basicConfig(level=logging.INFO)
+LOGGER = logging.getLogger(__name__)
+LOGGER.setLevel(logging.DEBUG)
 
 
 @dataclass
@@ -144,12 +149,16 @@ def clazz(session: Session, activity: Activity, when: datetime) -> Classroom:
     return Classroom(activity, when, class_event_id)
 
 
-def register(session: Session, activity: Activity, when: datetime):
+def register(session: Session, activity: Activity, when: datetime) -> bool:
     """
     Register the user of the given session to the given activity, at the given date.
     """
 
-    class_event: Classroom = clazz(session, activity, when)
+    try:
+        class_event: Classroom = clazz(session, activity, when)
+    except Exception as e:
+        LOGGER.error(e)
+        return False
 
     customer = session.customer
     url = 'https://api.fr.fitnesspark.app/fitnesspark/attendees'
@@ -172,11 +181,22 @@ def register(session: Session, activity: Activity, when: datetime):
     }
     resp: Response = requests.post(url, headers=headers, data=json.dumps(data))
     if resp.status_code != requests.codes.created:
-        raise Exception("Can't fetch URL: {0} {1}".format(resp.status_code, resp.content))
-    print('Registered for activity {0} on {1}.', activity.name, when.strftime('%d/%m/%Y'))
+        LOGGER.error("Can't fetch URL: {0} {1}".format(resp.status_code, resp.content))
+        return False
+
+    LOGGER.debug('Registered for activity {act} on {when}.'
+                 .format(act=activity.name, when=when.strftime('%d/%m/%Y at %H:%M'))
+                 )
+    return True
+
 
 session: Session = login(CUSTOMER)
 
-register(session, ACTIVITY_ZUMBA, datetime(2019, 6, 27, 19, 15, 0, 0, FRANCE_TZ))
+registrations_success = 0
 
-print('Enregistrée !')
+registrations_success += 1 if register(session, ACTIVITY_ZUMBA, datetime(2019, 6, 25, 12, 30, 0, 0, FRANCE_TZ)) else 0
+registrations_success += 1 if register(session, ACTIVITY_ZUMBA, datetime(2019, 6, 27, 19, 15, 0, 0, FRANCE_TZ)) else 0
+
+LOGGER.info('Registration trial complete. {success} registration(s) have been successfully made.'
+            .format(success=registrations_success)
+            )
