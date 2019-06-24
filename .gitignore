@@ -1,0 +1,50 @@
+#----------------------------------------------
+# Fichiers spécifiques de Java :
+#
+# (template issu de https://gitlab.com/bugmaker/planCharge/new/master?commit_message=Add+contribution+guide&file_name=.gitignore)
+#
+
+# Compiled class file
+*.class
+
+# Log file
+*.log
+
+## BlueJ files
+#*.ctxt
+
+## Mobile Tools for Java (J2ME)
+#.mtj.tmp/
+
+# Package Files #
+*.jar
+#*.war
+#*.ear
+*.zip
+#*.tar.gz
+#*.rar
+
+# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+hs_err_pid*
+
+#----------------------------------------------
+# Fichiers spécifiques de l'OS du PC de dév (KUbuntu) :
+#
+# Répertoire où Dolphin (explorateur de ficheirs de KUbuntu) stocke ses données :
+.directory
+
+
+#----------------------------------------------
+# Fichiers spécifiques d'IntelliJ :
+#
+
+*.iml
+.idea
+
+
+#----------------------------------------------
+# Fichiers spécifiques de cette application :
+#
+logs
+donnees
+target
