@@ -3,6 +3,7 @@ import json
 import logging
 import re
 import string
+import dateutil
 from datetime import datetime
 from enum import Enum
 from typing import Pattern, Match
@@ -10,9 +11,11 @@ from typing import Pattern, Match
 import pytz as pytz
 import requests
 from dataclasses import dataclass
+from dateutil.parser import parse
 from requests import Response
 
 FRANCE_TZ = pytz.timezone('Europe/Paris')
+# print(FRANCE_TZ._utcoffset)  # Prints '0:09:00' !?!
 
 logging.basicConfig(level=logging.INFO)
 LOGGER = logging.getLogger(__name__)
@@ -88,7 +91,7 @@ def login(customer: Customer) -> Session:
         resp_dict['expires_in'],
         resp_dict['refresh_token'],
         resp_dict['scope'],
-        resp_dict['token_type']
+        resp_dict['token_type'],
     )
     return user_session
 
@@ -99,17 +102,26 @@ class Activity:
     name: string
 
 
+"""
+Exhautive list of activities.
+"""
 ACTIVITY_ZUMBA = Activity(1547, 'Zumba')
-ACTIVITY_CAF = Activity(2, 'CAF')
-ACTIVITY_TBC = Activity(3, 'T.B.C.')
-ACTIVITY_BIKING = Activity(4, 'Biking')
-ACTIVITY_CROSS_TRAINING = Activity(5, 'Cross-training')
+ACTIVITY_CAF = Activity(1548, 'CAF')
+ACTIVITY_TBC = Activity(1549, 'T.B.C.')
+ACTIVITY_BIKING = Activity(1550, 'Biking')
+ACTIVITY_CROSS_TRAINING = Activity(1551, 'Cross Training')
+ACTIVITY_BODY_BARRE_ = Activity(1552, 'Body Barre')
+ACTIVITY_HIIT = Activity(1553, 'HIIT')
+ACTIVITY_BODY_SCULPT = Activity(1555, 'Body Sculpt')
+ACTIVITY_PILATES = Activity(1556, 'Pilates')
+ACTIVITY_CARDIO_ATTACK = Activity(1557, 'Cardio Attack')
+ACTIVITY_INEXISTANT = Activity(1, 'INEXISTANT')
 
 
 @dataclass
-class Classroom:
+class ClassEvent:
     activity: Activity
-    when: datetime
+    start_at: datetime
     id: int
 
 
@@ -117,7 +129,23 @@ CLASS_EVENT_ID_GROUP_NAME = 'id'
 CLASS_EVENT_ID_PATTERN: Pattern = re.compile('^/fitnesspark/class_events/(?P<' + CLASS_EVENT_ID_GROUP_NAME + '>\\d+)$')
 
 
-def clazz(session: Session, activity: Activity, when: datetime) -> Classroom:
+def check_event_start(class_event: ClassEvent, starting_at):
+    """
+    Check that the even given actually starts at the given date/time.
+    :param class_event:
+    :param starting_at:
+    :return:
+    """
+
+    # NB: Timezones differ (why?). Must not consider them when comparing.
+    # Cf. https://stackoverflow.com/questions/10944047/how-can-i-remove-a-pytz-timezone-from-a-datetime-object
+    if class_event.start_at.replace(tzinfo=None) != starting_at.replace(tzinfo=None):
+        raise Exception('Event does not start at the expected date/time: expecting {exp}, found {act}'
+                        .format(exp=starting_at, act=class_event.start_at)
+                        )
+
+
+def class_event(session: Session, activity: Activity, starting_at: datetime) -> ClassEvent:
     url = 'https://api.fr.fitnesspark.app/fitnesspark/class_events'
     headers = {
         'Accept': 'application/json, text/plain, */*',
@@ -129,33 +157,43 @@ def clazz(session: Session, activity: Activity, when: datetime) -> Classroom:
     customer = session.customer
     club_id = customer.contact_club_id
     params = {
-        'startedAt[after]': when.strftime('%Y-%m-%d'),
+        'startedAt[after]': starting_at.strftime('%Y-%m-%d'),
         'order[startedAt]': 'asc',
         'activity': '/fitnesspark/activities/{0}'.format(activity.identifier),
         'club': '/fitnesspark/clubs/{0}'.format(club_id),
+        'available': 'true',
     }
     resp: Response = requests.get(url, headers=headers, params=params)
     if resp.status_code != requests.codes.ok:
         raise Exception("Can't fetch URL: {0} {1}".format(resp.status_code, resp.content))
     resp_dict: dict = resp.json()
     class_events: dict = resp_dict['hydra:member']
-    first_class_event: dict = class_events[0]
-    class_event_str: string = first_class_event['@id']
-    m: Match = CLASS_EVENT_ID_PATTERN.match(class_event_str)
+    if len(class_events) == 0:
+        raise Exception('No class event (available) for activity {act} starting at {start}.'
+                        .format(act=activity.name, start=starting_at))
+    first_class_event_dict: dict = class_events[0]
+    class_event_id_tag: string = first_class_event_dict['@id']
+    m: Match = CLASS_EVENT_ID_PATTERN.match(class_event_id_tag)
     if m is None:
-        raise Exception("Can't find class event ID in '" + class_event_str + "'.")
-    class_event_id_str: string = m.group(CLASS_EVENT_ID_GROUP_NAME)
-    class_event_id: int = int(class_event_id_str)
-    return Classroom(activity, when, class_event_id)
+        raise Exception("Can't find class event ID in '" + class_event_id_tag + "'.")
+    class_event_id_tag: string = m.group(CLASS_EVENT_ID_GROUP_NAME)
+    class_event_id: int = int(class_event_id_tag)
+    start_str = first_class_event_dict.get('startedAt')
+    start_dt: datetime = parse(start_str)
+    class_evt = ClassEvent(activity, start_dt, class_event_id)
+
+    check_event_start(class_evt, starting_at)
+
+    return class_evt
 
 
-def register(session: Session, activity: Activity, when: datetime) -> bool:
+def try_to_register(session: Session, activity: Activity, starting_at: datetime) -> bool:
     """
     Register the user of the given session to the given activity, at the given date.
     """
 
     try:
-        class_event: Classroom = clazz(session, activity, when)
+        class_evt: ClassEvent = class_event(session, activity, starting_at)
     except Exception as e:
         LOGGER.error(e)
         return False
@@ -177,7 +215,7 @@ def register(session: Session, activity: Activity, when: datetime) -> bool:
         'contactFamilyName': customer.family_name,
         'contactGivenName': customer.given_name,
         'contactCreatedAt': customer.account_creation_date,
-        'classEvent': '/fitnesspark/class_events/{0}'.format(class_event.id)
+        'classEvent': '/fitnesspark/class_events/{0}'.format(class_evt.id)
     }
     resp: Response = requests.post(url, headers=headers, data=json.dumps(data))
     if resp.status_code != requests.codes.created:
@@ -185,18 +223,18 @@ def register(session: Session, activity: Activity, when: datetime) -> bool:
         return False
 
     LOGGER.debug('Registered for activity {act} on {when}.'
-                 .format(act=activity.name, when=when.strftime('%d/%m/%Y at %H:%M'))
-                 )
+                 .format(act=activity.name, when=starting_at.strftime('%d/%m/%Y at %H:%M')))
     return True
 
 
 session: Session = login(CUSTOMER)
 
-registrations_success = 0
-
-registrations_success += 1 if register(session, ACTIVITY_ZUMBA, datetime(2019, 6, 25, 12, 30, 0, 0, FRANCE_TZ)) else 0
-registrations_success += 1 if register(session, ACTIVITY_ZUMBA, datetime(2019, 6, 27, 19, 15, 0, 0, FRANCE_TZ)) else 0
+registration_success = 0
+for (activity, start_at) in [
+    (ACTIVITY_ZUMBA, datetime(2019, 6, 25, 12, 30, 0, 0, FRANCE_TZ)),
+    (ACTIVITY_ZUMBA, datetime(2019, 6, 27, 19, 15, 0, 0, FRANCE_TZ))
+]:
+    registration_success += 1 if try_to_register(session, activity, start_at) else 0
 
 LOGGER.info('Registration trial complete. {success} registration(s) have been successfully made.'
-            .format(success=registrations_success)
-            )
+            .format(success=registration_success))

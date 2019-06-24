@@ -1,0 +1,203 @@
+{
+  "@context": "\/fitnesspark\/contexts\/Activity",
+  "@id": "\/fitnesspark\/activities",
+  "@type": "hydra:Collection",
+  "hydra:member": [
+    {
+      "@id": "\/fitnesspark\/activities\/1547",
+      "@type": "Activity",
+      "name": "Zumba",
+      "clubId": null,
+      "colorHex": "#242b50",
+      "durations": [
+        "PT45M"
+      ],
+      "createdAt": "2019-05-27T16:54:16+02:00",
+      "createdBy": "Admin RESAMANIA \u003Cadmin@stadline.com\u003E",
+      "templateToken": null,
+      "isViewable": true,
+      "isBookable": true,
+      "archivedAt": null,
+      "archivedBy": null
+    },
+    {
+      "@id": "\/fitnesspark\/activities\/1548",
+      "@type": "Activity",
+      "name": "C.A.F",
+      "clubId": null,
+      "colorHex": "#c6ca00",
+      "durations": [
+        "PT45M"
+      ],
+      "createdAt": "2019-05-27T16:55:10+02:00",
+      "createdBy": "Admin RESAMANIA \u003Cadmin@stadline.com\u003E",
+      "templateToken": null,
+      "isViewable": true,
+      "isBookable": true,
+      "archivedAt": null,
+      "archivedBy": null
+    },
+    {
+      "@id": "\/fitnesspark\/activities\/1549",
+      "@type": "Activity",
+      "name": "T.B.C",
+      "clubId": null,
+      "colorHex": "#ca2300",
+      "durations": [
+        "PT45M"
+      ],
+      "createdAt": "2019-05-27T16:55:35+02:00",
+      "createdBy": "Admin RESAMANIA \u003Cadmin@stadline.com\u003E",
+      "templateToken": null,
+      "isViewable": true,
+      "isBookable": true,
+      "archivedAt": null,
+      "archivedBy": null
+    },
+    {
+      "@id": "\/fitnesspark\/activities\/1550",
+      "@type": "Activity",
+      "name": "Biking",
+      "clubId": null,
+      "colorHex": "#4000ca",
+      "durations": [
+        "PT45M"
+      ],
+      "createdAt": "2019-05-27T16:55:51+02:00",
+      "createdBy": "Admin RESAMANIA \u003Cadmin@stadline.com\u003E",
+      "templateToken": null,
+      "isViewable": true,
+      "isBookable": true,
+      "archivedAt": null,
+      "archivedBy": null
+    },
+    {
+      "@id": "\/fitnesspark\/activities\/1551",
+      "@type": "Activity",
+      "name": "Cross Training",
+      "clubId": null,
+      "colorHex": "#ca00a3",
+      "durations": [
+        "PT45M"
+      ],
+      "createdAt": "2019-05-27T16:56:14+02:00",
+      "createdBy": "Admin RESAMANIA \u003Cadmin@stadline.com\u003E",
+      "templateToken": null,
+      "isViewable": true,
+      "isBookable": true,
+      "archivedAt": null,
+      "archivedBy": null
+    },
+    {
+      "@id": "\/fitnesspark\/activities\/1552",
+      "@type": "Activity",
+      "name": "Body Barre",
+      "clubId": null,
+      "colorHex": "#caa300",
+      "durations": [
+        "PT45M"
+      ],
+      "createdAt": "2019-05-27T16:56:47+02:00",
+      "createdBy": "Admin RESAMANIA \u003Cadmin@stadline.com\u003E",
+      "templateToken": null,
+      "isViewable": true,
+      "isBookable": true,
+      "archivedAt": null,
+      "archivedBy": null
+    },
+    {
+      "@id": "\/fitnesspark\/activities\/1553",
+      "@type": "Activity",
+      "name": "HIIT",
+      "clubId": null,
+      "colorHex": "#9c00ca",
+      "durations": [
+        "PT45M"
+      ],
+      "createdAt": "2019-05-27T16:57:12+02:00",
+      "createdBy": "Admin RESAMANIA \u003Cadmin@stadline.com\u003E",
+      "templateToken": null,
+      "isViewable": true,
+      "isBookable": true,
+      "archivedAt": null,
+      "archivedBy": null
+    },
+    {
+      "@id": "\/fitnesspark\/activities\/1555",
+      "@type": "Activity",
+      "name": "Body Sculpt",
+      "clubId": null,
+      "colorHex": "#0fc4f9",
+      "durations": [
+        "PT45M"
+      ],
+      "createdAt": "2019-05-27T16:59:06+02:00",
+      "createdBy": "Admin RESAMANIA \u003Cadmin@stadline.com\u003E",
+      "templateToken": null,
+      "isViewable": true,
+      "isBookable": true,
+      "archivedAt": null,
+      "archivedBy": null
+    },
+    {
+      "@id": "\/fitnesspark\/activities\/1556",
+      "@type": "Activity",
+      "name": "Pilates",
+      "clubId": null,
+      "colorHex": "#1ffd0c",
+      "durations": [
+        "PT45M"
+      ],
+      "createdAt": "2019-05-27T17:00:35+02:00",
+      "createdBy": "Admin RESAMANIA \u003Cadmin@stadline.com\u003E",
+      "templateToken": null,
+      "isViewable": true,
+      "isBookable": true,
+      "archivedAt": null,
+      "archivedBy": null
+    },
+    {
+      "@id": "\/fitnesspark\/activities\/1557",
+      "@type": "Activity",
+      "name": "Cardio Attack",
+      "clubId": null,
+      "colorHex": "#ff3818",
+      "durations": [
+        "PT45M"
+      ],
+      "createdAt": "2019-05-27T17:01:40+02:00",
+      "createdBy": "Admin RESAMANIA \u003Cadmin@stadline.com\u003E",
+      "templateToken": null,
+      "isViewable": true,
+      "isBookable": true,
+      "archivedAt": null,
+      "archivedBy": null
+    }
+  ],
+  "hydra:totalItems": 10,
+  "hydra:search": {
+    "@type": "hydra:IriTemplate",
+    "hydra:template": "\/fitnesspark\/activities{?clubId,clubId[],archived}",
+    "hydra:variableRepresentation": "BasicRepresentation",
+    "hydra:mapping": [
+      {
+        "@type": "IriTemplateMapping",
+        "variable": "clubId",
+        "property": "clubId",
+        "required": false
+      },
+      {
+        "@type": "IriTemplateMapping",
+        "variable": "clubId[]",
+        "property": "clubId",
+        "required": false
+      },
+      {
+        "@type": "IriTemplateMapping",
+        "variable": "archived",
+        "property": "hydra:freetextQuery",
+        "required": false
+      }
+    ]
+  }
+}
